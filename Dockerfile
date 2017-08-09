@@ -18,19 +18,15 @@ ENV WK_VERSION 0.12.4
 # Install Essential Packages
 ############################################################
 RUN apt-get update
-RUN apt-get install -y cups \
-                        build-essential \
-                        xorg \
-                        libssl-dev \
-                        libxrender-dev \
-                        wget \
-                        gdebi
+RUN apt-get install -y cups
 
 ############################################################
 # Install WKHTMLTOPDF
 ############################################################                  
-RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/$WK_VERSION/wkhtmltox-$WK_VERSION_linux-generic-amd64.tar.xz
-RUN gdebi --n wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN apt-get install -y wkhtmltopdf xvfb
+RUN echo -e '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
+RUN chmod a+x /usr/bin/wkhtmltopdf.sh
+RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
 
 
 ############################################################
