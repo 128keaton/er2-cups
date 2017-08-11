@@ -2,39 +2,43 @@
 # Based on Debian Streaaaaaaaaaaaaaaaaaaåtch
 ############################################################
 
-FROM debian:stretch
+FROM centos:latest
 
 MAINTAINER Keaton Burleson keaton.burleson@me.com 
 
+EXPOSE 631
+
+VOLUME /var/log/cups /var/run/cups
 
 ############################################################
 # Arguments
 ############################################################
-ENV DEBIAN_FRONTEND noninteractive
-ENV WK_VERSION 0.12.4
-
+ENV WK_URL https://bitbucket.org/wkhtmltopdf/wkhtmltopdf/downloads/wkhtmltox-0.13.0-alpha-7b36694_linux-centos7-amd64.rpm
 
 ############################################################
 # Install Essential Packages
 ############################################################
-RUN apt-get update
-RUN apt-get install -y cups
+RUN yum -y install cups hostname  xorg-x11-server-Xvfb libpng libjpeg openssl icu libXrender && \
+    yum -y install xorg-x11-fonts-Type1 xorg-x11-fonts-75dpi wget && \
+    yum -y --setopt tsflags= reinstall cups && \
+    yum clean all   
 
 ############################################################
 # Install WKHTMLTOPDF
 ############################################################                  
-RUN apt-get install -y wkhtmltopdf xvfb
-RUN echo -e '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
-RUN chmod a+x /usr/bin/wkhtmltopdf.sh
-RUN ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
+
+RUN wget $WK_URL
+RUN rpm -ivh wkhtmltox*.rpm
+
+CMD /usr/bin/Xvfb :42 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
 
 
 ############################################################
 # Configure and start cups
 ############################################################       
 COPY scripts/add-printer.sh /usr/local/sbin/cupsd
+COPY scripts/wkhtmltopdf.sh /usr/local/sbin/wkhtmltopdf
+
+COPY conf/cupsd.permissive.conf /etc/cups/cupsd.conf
 CMD ["cupsd", "-f"]
 
-EXPOSE 631
-
-VOLUME /var/log/cups /var/run/cups
