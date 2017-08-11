@@ -18,7 +18,7 @@ ENV WK_URL https://bitbucket.org/wkhtmltopdf/wkhtmltopdf/downloads/wkhtmltox-0.1
 ############################################################
 # Install Essential Packages
 ############################################################
-RUN yum -y install cups hostname  xorg-x11-server-Xvfb libpng libjpeg openssl icu libXrender && \
+RUN yum -y install cups hostname xorg-x11-server-Xvfb libpng libjpeg openssl icu libXrender && \
     yum -y install xorg-x11-fonts-Type1 xorg-x11-fonts-75dpi wget && \
     yum -y --setopt tsflags= reinstall cups && \
     yum clean all   
@@ -34,11 +34,11 @@ CMD /usr/bin/Xvfb :42 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
 
 
 ############################################################
-# Configure and start cups
+# Configure 
 ############################################################       
-COPY scripts/add-printer.sh /usr/local/sbin/cupsd
-COPY scripts/wkhtmltopdf.sh /usr/local/sbin/wkhtmltopdf
-
+COPY scripts/wkhtmltopdf.sh /usr/local/sbin/html2pdf
+COPY scripts/xvfb-run /usr/bin/xvfb-run
 COPY conf/cupsd.permissive.conf /etc/cups/cupsd.conf
+
 CMD ["cupsd", "-f"]
 
